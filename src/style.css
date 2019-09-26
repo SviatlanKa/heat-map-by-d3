@@ -10,6 +10,7 @@ body {
     align-items: center;
     font-family: 'Roboto', sans-serif;
     text-align: center;
+    background-color: #ABB2B9;
 }
 
 #main {
@@ -17,9 +18,11 @@ body {
     flex-direction: column;
     align-items: center;
     background-color: white;
+    box-shadow: 1px 1px 16px 5px rgba(0,0,0,0.72);
 }
 
 #title {
+    margin: 2vw 0 1vw 0;
     font-size: 2em;
     font-weight: bold;
 }
