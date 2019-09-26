@@ -34,7 +34,10 @@ const tooltip = d3.select("#main")
     .style("opacity", 0);
 
 d3.json(url).then(response => {
-    let data = response.monthlyVariance;
+    const data = response.monthlyVariance;
+    const years = d3.set(data.map(item => item.year)).values();
+    const months = d3.set(data.map(item => item.month)).values();
+
     const baseTemp = response.baseTemperature;
 
     d3.select("#desc").text(`1753 - 2015: base temperature ${baseTemp}°C`);
@@ -43,6 +46,42 @@ d3.json(url).then(response => {
     const maxVal = d3.max(data, d => d.variance);
 
     const colorScale = d3.scaleQuantize()
-        .domain([minVal, maxVal])
+        .domain([minVal, 7])
         .range(myColor);
+
+    const scaleX = d3.scaleLinear()
+        .domain([d3.min(years),d3.max(years)])
+        .range([0, 850]);
+    const scaleY = d3.scaleBand()
+        .domain(months)
+        .range([height - padding, 0]);
+
+    const xAxis = d3.axisBottom()
+        .scale(scaleX);
+    const yAxis = d3.axisLeft()
+        .scale(scaleY);
+
+    chart.append("g")
+        .attr("id", "x-axis")
+        .attr("transform", "translate(100,450)")
+        .call(xAxis.ticks(20, "d"));
+
+    chart.append("g")
+        .attr("id", "y-axis")
+        .attr("transform", "translate(100)")
+        .call(yAxis);
+
+console.log(months)
+
+
+    chart.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "cell")
+        .attr("x", d => scaleX(d.year))
+        .attr("y", d => scaleY(d.month))
+        .attr("width", (width - padding) / data.length)
+        .attr("height", (height - padding) /12)
+        .attr("fill", colorScale(d => d.variance))
 });
