@@ -22,27 +22,28 @@ body {
 }
 
 #title {
-    margin: 2vw 0 1vw 0;
-    font-size: 2em;
+    margin: 1.5vw 0 .5vw 0;
+    font-size: 1.5em;
     font-weight: bold;
 }
 
 #desc {
-    font-size: 1.3em;
+    font-size: 1em;
 }
 
 #tooltip {
     position: absolute;
-    width: 10vw;
+    width: fit-content;
     height: fit-content;
     padding: .7vw;
-    font-size: .8em;
-    font-weight: bold;
-    text-align: left;
+    font-size: 1em;
+    color: white;
+    text-align: center;
     border-radius: 10px;
+    background-color: black;
     box-shadow: 1px 1px 8px 5px rgba(0,0,0,0.72);
 }
 
-#x-axis, #y-axis {
+#y-axis {
     font-size: .8em;
 }

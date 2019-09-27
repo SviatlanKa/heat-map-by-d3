@@ -4,11 +4,16 @@ import './style.css';
 const url = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json";
 
 const width = 1000;
-const height = 500;
-const padding = 50;
+const height = width / 2;
+const margin = {
+    left: width / 10,
+    right: width / 40,
+    top: height / 50,
+    bottom: height / 10
+};
 const myColor = [
-    '#08306b','#08519c','#2171b5','#4292c6','#6baed6','#9ecae1','#c6dbef','#deebf7','#f7fbff',//blue part
-    '#fff7ec','#fee8c8','#fdd49e','#fdbb84','#fc8d59','#ef6548','#d7301f','#b30000','#7f0000'  //red part
+    '#a50026','#d73027','#f46d43','#fdae61','#fee090','#ffffbf',
+    '#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'
 ];
 
 d3.select("body")
@@ -33,55 +38,88 @@ const tooltip = d3.select("#main")
     .attr("id", "tooltip")
     .style("opacity", 0);
 
+const chartPlot = chart.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
 d3.json(url).then(response => {
     const data = response.monthlyVariance;
     const years = d3.set(data.map(item => item.year)).values();
-    const months = d3.set(data.map(item => item.month)).values();
+    const monthsNum = d3.set(data.map(item => item.month)).values();
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const convertMonth = num => monthNames[num - 1];
+    const months = monthsNum.map(item => convertMonth(item));
 
     const baseTemp = response.baseTemperature;
-
-    d3.select("#desc").text(`1753 - 2015: base temperature ${baseTemp}°C`);
+    const calcTemp = num => Math.round((baseTemp + num) * 10) / 10;
 
     const minVal = d3.min(data, d => d.variance);
     const maxVal = d3.max(data, d => d.variance);
 
     const colorScale = d3.scaleQuantize()
-        .domain([minVal, 7])
-        .range(myColor);
+        .domain([minVal, maxVal])
+        .range(myColor.reverse());
+
+    const minYear = d3.min(years);
+    const maxYear = d3.max(years);
 
     const scaleX = d3.scaleLinear()
-        .domain([d3.min(years),d3.max(years)])
-        .range([0, 850]);
+        .domain([minYear - 1,maxYear])
+        .range([0, width - margin.left - margin.right]);
     const scaleY = d3.scaleBand()
-        .domain(months)
-        .range([height - padding, 0]);
+        .domain(months.reverse())
+        .range([height - margin.top - margin.bottom, 0]);
+
 
     const xAxis = d3.axisBottom()
         .scale(scaleX);
     const yAxis = d3.axisLeft()
         .scale(scaleY);
 
-    chart.append("g")
+    d3.select("#desc").text(`${minYear} - ${maxYear} (base temperature ${baseTemp}°C)`);
+
+    const translateAxis = height - margin.top - margin.bottom;
+    chartPlot.append("g")
         .attr("id", "x-axis")
-        .attr("transform", "translate(100,450)")
+        .attr("transform", `translate(0,${translateAxis})`)
         .call(xAxis.ticks(20, "d"));
 
-    chart.append("g")
+    chartPlot.append("g")
         .attr("id", "y-axis")
-        .attr("transform", "translate(100)")
         .call(yAxis);
 
-console.log(months)
-
-
-    chart.selectAll("rect")
+    chartPlot.selectAll("rect")
         .data(data)
         .enter()
         .append("rect")
         .attr("class", "cell")
         .attr("x", d => scaleX(d.year))
-        .attr("y", d => scaleY(d.month))
-        .attr("width", (width - padding) / data.length)
-        .attr("height", (height - padding) /12)
-        .attr("fill", colorScale(d => d.variance))
+        .attr("y", d => scaleY(convertMonth(d.month)))
+        .attr("width", (width - margin.left - margin.right) / years.length)
+        .attr("height", (height - margin.top - margin.bottom) /12)
+        .attr("fill", d => colorScale(d.variance))
+        .on("mouseover", d => {
+            tooltip.transition()
+                .duration(300)
+                .style("opacity", .8);
+            tooltip.html(`<span>${d.year}, ${convertMonth(d.month)}<br>${calcTemp(d.variance)}°C &lpar;${d.variance}°C&rpar;</span>`)
+                .style("left", d3.event.pageX + 15 + "px")
+                .style("top", d3.event.pageY + "px")
+                .attr("data-year", d.year);
+        })
+        .on("mouseout", d => {
+            tooltip.transition()
+                .duration(250)
+                .style("opacity", 0)
+        });
+
+    chart.append("text")
+        .attr("text-anchor", "end")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -1 * margin.left)
+        .attr("y", margin.right)
+        .style("font-size", "1.3em")
+        .text("Months");
 });
