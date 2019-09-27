@@ -47,3 +47,7 @@ body {
 #y-axis {
     font-size: .8em;
 }
+
+.cell:hover {
+    stroke: #212F3C;
+}
