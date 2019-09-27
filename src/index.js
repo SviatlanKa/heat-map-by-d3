@@ -34,7 +34,7 @@ d3.select("body")
 
 d3.select("#main")
     .append("span")
-    .attr("id", "desc");
+    .attr("id", "description");
 
 const chart = d3.select("#main")
     .append("svg")
@@ -118,13 +118,13 @@ d3.json(url).then(response => {
         .enter()
         .append("rect")
         .attr("class", "cell")
-        .attr("data-month", d => d.months)
+        .attr("data-month", d => d.month - 1)
         .attr("data-year", d => d.year)
         .attr("data-temp", d => calcTemp(d.variance) )
         .attr("x", d => scaleX(d.year))
         .attr("y", d => scaleY(convertMonth(d.month)))
         .attr("width", (width - margin.left - margin.right) / years.length)
-        .attr("height", (height - margin.top - margin.bottom - legendHeight) /12)
+        .attr("height", scaleY.bandwidth())
         .attr("fill", d => colorScale(d.variance))
         .on("mouseover", d => {
             tooltip.transition()
